@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -12,10 +13,9 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $products = Product::all();
-
         foreach ($products as $product) { // Delete expired products
             if (date_diff(date_create('now'), date_create($product->expiry_date))->invert) {
                 if ($product->image) { // Delete image file
@@ -27,7 +27,39 @@ class ProductController extends Controller
                 $product->delete();
             }
         }
-        return Product::all();
+
+        $category = $request->input('category');
+        if ($category) {
+            $category = Category::where('name', $category)->first();
+            if (!$category) {
+                return response()->json(['error' => 'Category not found'], 404);
+            }
+            return $category->products->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'image' => $product->image,
+                    'category' => $product->category->name,
+                    'expiry_date' => $product->expiry_date,
+                    'votes' => $product->votes,
+                    'views' => $product->views,
+                ];
+            });
+        }
+
+        return Product::all()->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'image' => $product->image,
+                'category' => $product->category->name,
+                'expiry_date' => $product->expiry_date,
+                'votes' => $product->votes,
+                'views' => $product->views,
+            ];
+        });
     }
 
     /**
@@ -48,10 +80,21 @@ class ProductController extends Controller
             'thirty_days_discount' => ['required', 'numeric', 'min:0', 'max:100'],
             'fifteen_days_discount' => ['required', 'numeric', 'min:0', 'max:100'],
             'image' => ['image'],
+            'category' => ['required', 'string'],
         ]);
 
         if ($request->hasFile('image') && $request->file('image')->getSize() > (0.5 * 1024 * 1024)) {
             return response()->json(['error' => 'Image size must be less than 512KB'], 400);
+        }
+
+        // Check if category exists
+        foreach (Category::all() as $key => $value) {
+            if ($value->name === $request->input('category')) {
+                $fields['category_id'] = $value->id;
+            }
+        }
+        if (!isset($fields['category_id'])) {
+            return response()->json(['error' => 'Category does not exist'], 400);
         }
 
         $product = Product::create($fields);
@@ -70,9 +113,22 @@ class ProductController extends Controller
         $product->views += 1;
         $product->save();
 
-        return $product ?
-            response($product) :
-            response()->json(['error' => 'Product not found'], 404);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->name,
+            'price' => $product->price,
+            'image' => $product->image,
+            'category' => $product->category->name,
+            'expiry_date' => $product->expiry_date,
+            'description' => $product->description,
+            'contact_info' => $product->contact_info,
+            'votes' => $product->votes,
+            'views' => $product->views,
+        ], 200);
     }
 
     /**
@@ -94,9 +150,22 @@ class ProductController extends Controller
             'thirty_days_discount' => ['numeric', 'min:0', 'max:100'],
             'fifteen_days_discount' => ['numeric', 'min:0', 'max:100'],
             'image' => ['image'],
+            'category' => ['string'],
         ]);
         if ($request->hasFile('image') && $request->file('image')->getSize() > (0.5 * 1024 * 1024)) {
             return response()->json(['error' => 'Image size must be less than 512KB'], 400);
+        }
+
+        // Check if category exists
+        if ($request->category) {
+            foreach (Category::all() as $key => $value) {
+                if ($value->name === $request->input('category')) {
+                    $fields['category_id'] = $value->id;
+                }
+            }
+            if (!isset($fields['category_id'])) {
+                return response()->json(['error' => 'Category does not exist'], 400);
+            }
         }
 
         $product = Product::find($id);

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Category;
 
 class Product extends Model
 {
@@ -24,6 +25,7 @@ class Product extends Model
         'expiry_date',
         'thirty_days_discount',
         'fifteen_days_discount',
+        'category_id'
     ];
 
     public function setImageAttribute($value)
@@ -33,5 +35,20 @@ class Product extends Model
 
         $value->move($path, $name);
         $this->attributes['image'] = $name;
+    }
+
+    public function setExpiryDateAttribute($value)
+    {
+        $this->attributes['expiry_date'] = date('Y-m-d', strtotime($value));
+    }
+
+    public function getExpiryDateAttribute()
+    {
+        return date('Y-m-d', strtotime($this->attributes['expiry_date']));
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 }
