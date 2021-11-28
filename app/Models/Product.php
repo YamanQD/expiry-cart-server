@@ -25,4 +25,13 @@ class Product extends Model
         'thirty_days_discount',
         'fifteen_days_discount',
     ];
+
+    public function setImageAttribute($value)
+    {
+        $path = public_path('images/products');
+        $name = time() . '.' . $value->getClientOriginalExtension();
+
+        $value->move($path, $name);
+        $this->attributes['image'] = $name;
+    }
 }
