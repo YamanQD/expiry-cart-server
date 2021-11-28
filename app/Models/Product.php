@@ -25,14 +25,4 @@ class Product extends Model
         'thirty_days_discount',
         'fifteen_days_discount',
     ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array
-     */
-    protected $hidden = [
-        'thirty_days_discount',
-        'fifteen_days_discount',
-    ];
 }
