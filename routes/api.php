@@ -1,10 +1,9 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\CategoryController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +16,7 @@ use App\Http\Controllers\AuthController;
 |
 */
 
+// Public routes
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
@@ -25,16 +25,13 @@ Route::get('/categories', [CategoryController::class, 'index']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// Protected routes
 Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::post('/products', [ProductController::class, 'store']);
-    Route::post('/products/{id}/vote', [ProductController::class, 'vote']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
     Route::patch('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-});
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+    Route::post('/products/{id}/vote', [ProductController::class, 'vote']);
 });

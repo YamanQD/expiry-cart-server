@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Category;
 
 class Product extends Model
 {
@@ -29,6 +29,7 @@ class Product extends Model
         'user_id',
     ];
 
+    // Save the image on the server and return its name
     public function setImageAttribute($value)
     {
         $path = public_path('images/products');

@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class AuthController extends Controller
 {
     /**
      * Register a new user.
      *
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function register(Request $request)
@@ -37,7 +37,7 @@ class AuthController extends Controller
     /**
      * Login user and create token
      *
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function login(Request $request)
@@ -48,7 +48,6 @@ class AuthController extends Controller
         ]);
 
         $credentials = $request->only('email', 'password');
-
         if (!Auth::attempt($credentials)) {
             return response()->json([
                 'message' => 'Wrong email or password'
@@ -67,7 +66,7 @@ class AuthController extends Controller
     /**
      * Logout user (Revoke the token)
      *
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function logout(Request $request)

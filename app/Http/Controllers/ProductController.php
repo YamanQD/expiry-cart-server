@@ -9,16 +9,18 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * List all products.
      *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
         $products = Product::all();
-        foreach ($products as $product) { // Delete expired products
+        // Delete expired products
+        foreach ($products as $product) {
             if (date_diff(date_create('now'), date_create($product->expiry_date))->invert) {
-                if ($product->image) { // Delete image file
+                // Delete image file
+                if ($product->image) {
                     $imageFile = public_path('images/products/' . $product->image);
                     if (file_exists($imageFile)) {
                         unlink($imageFile);
@@ -28,13 +30,22 @@ class ProductController extends Controller
             }
         }
 
+        // Filter products by category
         $category = $request->input('category');
         if ($category) {
+            // Check if category exists
             $category = Category::where('name', $category)->first();
             if (!$category) {
                 return response()->json(['error' => 'Category not found'], 404);
             }
+
             return $category->products->map(function ($product) {
+                $owner = $product->user;
+                $owner = [
+                    'id' => $owner->id,
+                    'name' => $owner->name,
+                ];
+
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -44,10 +55,12 @@ class ProductController extends Controller
                     'expiry_date' => $product->expiry_date,
                     'votes' => $product->votes,
                     'views' => $product->views,
+                    'owner' => $owner,
                 ];
             });
         }
 
+        // Return all products
         return Product::all()->map(function ($product) {
             $owner = $product->user;
             $owner = [
@@ -70,7 +83,7 @@ class ProductController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a product.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -78,18 +91,19 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'name' => ['required', 'string'],
-            'description' => ['string'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'quantity' => ['numeric', 'min:0'],
-            'contact_info' => ['required', 'string'],
-            'expiry_date' => ['required', 'date'],
-            'thirty_days_discount' => ['required', 'numeric', 'min:0', 'max:100'],
-            'fifteen_days_discount' => ['required', 'numeric', 'min:0', 'max:100'],
-            'image' => ['image'],
-            'category' => ['required', 'string'],
+            'name' => 'required|string',
+            'description' => 'string',
+            'price' => 'required|numeric|min:0',
+            'quantity' => 'numeric|min:0',
+            'contact_info' => 'required|string',
+            'expiry_date' => 'required|date|after:today',
+            'thirty_days_discount' => 'required|numeric|min:0|max:100',
+            'fifteen_days_discount' => 'required|numeric|min:0|max:100',
+            'image' => 'image',
+            'category' => 'required|string',
         ]);
 
+        // Check if image size is less than 512KB
         if ($request->hasFile('image') && $request->file('image')->getSize() > (0.5 * 1024 * 1024)) {
             return response()->json(['error' => 'Image size must be less than 512KB'], 400);
         }
@@ -112,20 +126,27 @@ class ProductController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Get a product by id.
      *
-     * @param  \App\Models\Product  $product
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
     {
         $product = Product::find($id);
-        $product->views += 1;
-        $product->save();
-
         if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
         }
+
+        // Increase product views
+        $product->views += 1;
+        $product->save();
+
+        $owner = $product->user;
+        $owner = [
+            'id' => $owner->id,
+            'name' => $owner->name,
+        ];
 
         return response()->json([
             'id' => $product->id,
@@ -138,14 +159,15 @@ class ProductController extends Controller
             'contact_info' => $product->contact_info,
             'votes' => $product->votes,
             'views' => $product->views,
+            'owner' => $owner,
         ], 200);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update a product by id.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Product  $product
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
@@ -163,17 +185,17 @@ class ProductController extends Controller
         }
 
         $fields = $request->validate([
-            'name' => ['string'],
-            'description' => ['string'],
-            'price' => ['numeric', 'min:0'],
-            'quantity' => ['numeric', 'min:0'],
-            'contact_info' => ['string'],
-            'expiry_date' => ['date'],
-            'thirty_days_discount' => ['numeric', 'min:0', 'max:100'],
-            'fifteen_days_discount' => ['numeric', 'min:0', 'max:100'],
-            'image' => ['image'],
-            'category' => ['string'],
+            'name' => 'string',
+            'description' => 'string',
+            'price' => 'numeric|min:0',
+            'quantity' => 'numeric|min:0',
+            'contact_info' => 'string',
+            'thirty_days_discount' => 'numeric|min:0|max:100',
+            'fifteen_days_discount' => 'numeric|min:0|max:100',
+            'image' => 'image',
+            'category' => 'string',
         ]);
+        // Check if image size is less than 512KB
         if ($request->hasFile('image') && $request->file('image')->getSize() > (0.5 * 1024 * 1024)) {
             return response()->json(['error' => 'Image size must be less than 512KB'], 400);
         }
@@ -197,9 +219,10 @@ class ProductController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Product  $product
+     * Delete a product by id.
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function destroy(Request $request, $id)
@@ -216,6 +239,7 @@ class ProductController extends Controller
             return response()->json(['error' => 'You are not the owner of this product'], 403);
         }
 
+        // Delete product image from server
         if ($product->image) {
             $imageFile = public_path('images/products/' . $product->image);
             if (file_exists($imageFile)) {
@@ -227,6 +251,13 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product deleted successfully'], 200);
     }
 
+    /**
+     * Vote for a product.
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function vote(Request $request, $id)
     {
         $fields = $request->validate([
