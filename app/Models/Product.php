@@ -29,6 +29,18 @@ class Product extends Model
         'user_id',
     ];
 
+    // Calculate price based on expiry date
+    public function getPriceAttribute()
+    {
+        if ($this->expiry_date->diffInDays() <= 30) {
+            return $this->price * $this->thirty_days_discount / 100;
+        } else if ($this->expiry_date->diffInDays() <= 15) {
+            return $this->price * $this->fifteen_days_discount / 100;
+        } else {
+            return $this->price;
+        }
+    }
+
     // Save the image on the server and return its name
     public function setImageAttribute($value)
     {
