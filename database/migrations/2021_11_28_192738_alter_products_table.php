@@ -15,7 +15,7 @@ class AlterProductsTable extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->foreignIdFor(Category::class);
+            $table->foreignIdFor(Category::class)->constrained('categories')->cascadeOnDelete();
         });
     }
 

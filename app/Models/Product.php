@@ -25,7 +25,8 @@ class Product extends Model
         'expiry_date',
         'thirty_days_discount',
         'fifteen_days_discount',
-        'category_id'
+        'category_id',
+        'user_id',
     ];
 
     public function setImageAttribute($value)
@@ -50,5 +51,10 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -26,6 +27,7 @@ class CreateProductsTable extends Migration
             $table->unsignedTinyInteger('fifteen_days_discount'); // Discount percentage after 15 days left
             $table->unsignedInteger('views')->default(0);
             $table->integer('votes')->default(0);
+            $table->foreignIdFor(User::class)->constrained();
             $table->timestamps();
         });
     }

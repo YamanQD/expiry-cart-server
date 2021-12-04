@@ -49,6 +49,12 @@ class ProductController extends Controller
         }
 
         return Product::all()->map(function ($product) {
+            $owner = $product->user;
+            $owner = [
+                'id' => $owner->id,
+                'name' => $owner->name,
+            ];
+
             return [
                 'id' => $product->id,
                 'name' => $product->name,
@@ -58,6 +64,7 @@ class ProductController extends Controller
                 'expiry_date' => $product->expiry_date,
                 'votes' => $product->votes,
                 'views' => $product->views,
+                'owner' => $owner,
             ];
         });
     }
@@ -96,6 +103,9 @@ class ProductController extends Controller
         if (!isset($fields['category_id'])) {
             return response()->json(['error' => 'Category does not exist'], 400);
         }
+
+        $user = $request->user();
+        $fields['user_id'] = $user->id;
 
         $product = Product::create($fields);
         return response($product, 201);
@@ -140,6 +150,18 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Check if product exists
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        // Check if user is owner of product
+        $user = $request->user();
+        if ($user->id !== $product->user_id) {
+            return response()->json(['error' => 'You are not the owner of this product'], 403);
+        }
+
         $fields = $request->validate([
             'name' => ['string'],
             'description' => ['string'],
@@ -168,11 +190,6 @@ class ProductController extends Controller
             }
         }
 
-        $product = Product::find($id);
-        if (!$product) {
-            return response()->json(['error' => 'Product not found'], 404);
-        }
-
         $product->update($fields);
         $product->save();
 
@@ -185,11 +202,18 @@ class ProductController extends Controller
      * @param  \App\Models\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
+        // Check if product exists
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        // Check if user is owner of product
+        $user = $request->user();
+        if ($user->id != $product->user_id) {
+            return response()->json(['error' => 'You are not the owner of this product'], 403);
         }
 
         if ($product->image) {
