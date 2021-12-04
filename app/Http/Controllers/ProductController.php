@@ -185,32 +185,10 @@ class ProductController extends Controller
         }
 
         $fields = $request->validate([
-            'name' => 'string',
             'description' => 'string',
-            'price' => 'numeric|min:0',
             'quantity' => 'numeric|min:0',
             'contact_info' => 'string',
-            'thirty_days_discount' => 'numeric|min:0|max:100',
-            'fifteen_days_discount' => 'numeric|min:0|max:100',
-            'image' => 'image',
-            'category' => 'string',
         ]);
-        // Check if image size is less than 512KB
-        if ($request->hasFile('image') && $request->file('image')->getSize() > (0.5 * 1024 * 1024)) {
-            return response()->json(['error' => 'Image size must be less than 512KB'], 400);
-        }
-
-        // Check if category exists
-        if ($request->category) {
-            foreach (Category::all() as $key => $value) {
-                if ($value->name === $request->input('category')) {
-                    $fields['category_id'] = $value->id;
-                }
-            }
-            if (!isset($fields['category_id'])) {
-                return response()->json(['error' => 'Category does not exist'], 400);
-            }
-        }
 
         $product->update($fields);
         $product->save();
