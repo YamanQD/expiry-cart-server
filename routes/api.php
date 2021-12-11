@@ -34,4 +34,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::patch('/products/{id}', [ProductController::class, 'update']);
     Route::delete('/products/{id}', [ProductController::class, 'destroy']);
     Route::post('/products/{id}/vote', [ProductController::class, 'vote']);
+
+    Route::post('/products/{id}/comments', [ProductController::class, 'comment']);
 });

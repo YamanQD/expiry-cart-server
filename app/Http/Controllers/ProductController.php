@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -148,6 +149,20 @@ class ProductController extends Controller
             'name' => $owner->name,
         ];
 
+        $comments = $product->comments->map(function ($comment) {
+            $owner = $comment->user;
+            $owner = [
+                'id' => $owner->id,
+                'name' => $owner->name,
+            ];
+
+            return [
+                'id' => $comment->id,
+                'body' => $comment->body,
+                'owner' => $owner,
+            ];
+        });
+
         return response()->json([
             'id' => $product->id,
             'name' => $product->name,
@@ -160,6 +175,7 @@ class ProductController extends Controller
             'votes' => $product->votes,
             'views' => $product->views,
             'owner' => $owner,
+            'comments' => $comments,
         ], 200);
     }
 
@@ -251,5 +267,32 @@ class ProductController extends Controller
         $product->save();
 
         return response()->json(['success' => 'Vote added successfully'], 200);
+    }
+
+    /**
+     * Comment on a product.
+     * 
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function comment(Request $request, $id)
+    {
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
+        }
+
+        $fields = $request->validate([
+            'body' => ['required', 'string', 'max:255'],
+        ]);
+
+        $comment = Comment::create([
+            'body' => $fields['body'],
+            'user_id' => $request->user()->id,
+            'product_id' => $id,
+        ]);
+
+        return response($comment, 201);
     }
 }
