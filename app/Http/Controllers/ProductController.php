@@ -166,6 +166,7 @@ class ProductController extends Controller
             'id' => $product->id,
             'name' => $product->name,
             'price' => $product->price,
+            'quantity' => $product->quantity,
             'image' => $product->image,
             'category' => $product->category->name,
             'expiry_date' => $product->expiry_date,
