@@ -78,7 +78,6 @@ class ProductController extends Controller
                 'expiry_date' => $product->expiry_date,
                 'votes' => $product->votes,
                 'views' => $product->views,
-                'owner' => $owner,
             ];
         });
     }
@@ -122,8 +121,8 @@ class ProductController extends Controller
         $user = $request->user();
         $fields['user_id'] = $user->id;
 
-        $product = Product::create($fields);
-        return response($product, 201);
+        Product::create($fields);
+        return response()->json(['success' => 'Product created successfully'], 201);
     }
 
     /**
