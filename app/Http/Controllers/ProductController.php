@@ -255,7 +255,7 @@ class ProductController extends Controller
     public function vote(Request $request, $id)
     {
         $fields = $request->validate([
-            'vote' => ['required', 'numeric', 'min:-1', 'max:1'],
+            'vote' => 'required|numeric|min:-1|max:1',
         ]);
 
         $product = Product::find($id);
@@ -284,7 +284,7 @@ class ProductController extends Controller
         }
 
         $fields = $request->validate([
-            'body' => ['required', 'string', 'max:255'],
+            'body' => 'required|string|max:255',
         ]);
 
         $comment = Comment::create([
