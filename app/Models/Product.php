@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Category;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,13 +33,18 @@ class Product extends Model
     // Calculate price based on expiry date
     public function getPriceAttribute()
     {
-        if ($this->expiry_date->diffInDays() <= 30) {
-            return $this->price * $this->thirty_days_discount / 100;
-        } else if ($this->expiry_date->diffInDays() <= 15) {
-            return $this->price * $this->fifteen_days_discount / 100;
-        } else {
-            return $this->price;
+        $expiry_date = Carbon::parse($this->attributes['expiry_date']);
+        $now = Carbon::now();
+        $price = $this->attributes['price'];
+        $discount = 0;
+
+        if ($expiry_date->diffInDays($now) <= 15) {
+            $discount = $price * $this->attributes['fifteen_days_discount'] / 100;
+        } else if ($expiry_date->diffInDays($now) <= 30) {
+            $discount = $price * $this->attributes['thirty_days_discount'] / 100;
         }
+
+        return $price - $discount;
     }
 
     // Save the image on the server and return its name
@@ -53,12 +59,7 @@ class Product extends Model
 
     public function setExpiryDateAttribute($value)
     {
-        $this->attributes['expiry_date'] = date('Y-m-d', strtotime($value));
-    }
-
-    public function getExpiryDateAttribute()
-    {
-        return date('Y-m-d', strtotime($this->attributes['expiry_date']));
+        $this->attributes['expiry_date'] = Carbon::parse($value);
     }
 
     public function category()
