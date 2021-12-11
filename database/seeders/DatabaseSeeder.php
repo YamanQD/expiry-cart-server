@@ -19,16 +19,22 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Canned food'
             ],
             [
-                'name' => 'Dairy'
+                'name' => 'Dairy & Eggs'
             ],
             [
-                'name' => 'Fruits and vegetables'
+                'name' => 'Fruits & vegetables'
             ],
             [
-                'name' => 'Meat, Fish, Poultry'
+                'name' => 'Meat, Fish & Poultry'
             ],
             [
-                'name' => 'Other'
+                'name' => 'Beverages'
+            ],
+            [
+                'name' => 'Bakery & Snacks'
+            ],
+            [
+                'name' => 'Others'
             ],
         ]);
     }
