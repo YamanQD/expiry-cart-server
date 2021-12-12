@@ -18,15 +18,15 @@ class AuthController extends Controller
     {
         $this->validate($request, [
             'name' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users',
+            'email' => 'required|email|max:255|unique:users', // Unique for each user
             'password' => 'required|min:6',
-            'password_confirmation' => 'required|same:password',
+            'password_confirmation' => 'required|same:password', // Identical to password field
         ]);
 
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'password' => bcrypt($request->password), // Encrypt password
         ]);
 
         return response()->json([
@@ -47,13 +47,15 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        // Get email and password from request
         $credentials = $request->only('email', 'password');
-        if (!Auth::attempt($credentials)) {
+        if (!Auth::attempt($credentials)) { // Attempt to login using email & password
             return response()->json([
                 'message' => 'Wrong email or password'
             ], 401);
         }
 
+        // Get authenticated user
         $user = $request->user();
         $token = $user->createToken('Personal Access Token')->plainTextToken;
 
@@ -71,6 +73,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        // Get authenticated user and delete all their tokens
         $user = $request->user();
         $user->tokens()->delete();
 

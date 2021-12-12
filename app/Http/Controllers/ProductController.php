@@ -41,6 +41,7 @@ class ProductController extends Controller
             }
 
             return $category->products->map(function ($product) {
+                // Add owner field with id and name
                 $owner = $product->user;
                 $owner = [
                     'id' => $owner->id,
@@ -63,6 +64,7 @@ class ProductController extends Controller
 
         // Return all products
         return Product::all()->map(function ($product) {
+            // Add owner field with id and name
             $owner = $product->user;
             $owner = [
                 'id' => $owner->id,
@@ -142,6 +144,7 @@ class ProductController extends Controller
         $product->views += 1;
         $product->save();
 
+        // Add owner field with id and name
         $owner = $product->user;
         $owner = [
             'id' => $owner->id,
@@ -149,6 +152,7 @@ class ProductController extends Controller
         ];
 
         $comments = $product->comments->map(function ($comment) {
+            // Add owner field with id and name
             $owner = $comment->user;
             $owner = [
                 'id' => $owner->id,
