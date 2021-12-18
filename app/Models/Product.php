@@ -37,7 +37,7 @@ class Product extends Model
         $expiry_date = Carbon::parse($this->attributes['expiry_date']);
         $now = Carbon::now();
         $price = $this->attributes['price'];
-        $discount = 0;
+        $discount = 0.0;
 
         if ($expiry_date->diffInDays($now) <= 15) {
             $discount = $price * $this->attributes['fifteen_days_discount'] / 100;
@@ -45,7 +45,7 @@ class Product extends Model
             $discount = $price * $this->attributes['thirty_days_discount'] / 100;
         }
 
-        return $price - $discount;
+        return number_format($price - $discount, 2, '.', '');
     }
 
     // Save the image on the server and return its name
