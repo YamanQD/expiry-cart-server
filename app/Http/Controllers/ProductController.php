@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Comment;
+use App\Models\Vote;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -259,7 +260,7 @@ class ProductController extends Controller
     public function vote(Request $request, $id)
     {
         $fields = $request->validate([
-            'vote' => 'required|numeric|min:-1|max:1',
+            'vote' => 'required|string|in:up,down',
         ]);
 
         $product = Product::find($id);
@@ -267,10 +268,31 @@ class ProductController extends Controller
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        $product->votes += $fields['vote'];
+        $user = $request->user();
+        $vote = $user->votes()->where('product_id', $id)->first();
+        // If user already voted for this product
+        if ($vote) {
+            // If user already voted with the same vote
+            if ($vote->type === $fields['vote']) {
+                return response()->json(['error' => 'You have already voted for this product'], 400);
+            }
+
+            // If user already voted with different vote
+            $vote->type = $fields['vote'];
+            $vote->save();
+            $product->votes += $fields['vote'] === 'up' ? 1 : -1;
+            $product->save();
+            return response()->json(['success' => 'Vote updated successfully'], 200);
+        }
+        // If user hasn't voted for this product
+        $user->votes()->create([
+            'product_id' => $id,
+            'type' => $fields['vote'],
+        ]);
+        $product->votes += $fields['vote'] === 'up' ? 1 : -1;
         $product->save();
 
-        return response()->json(['success' => 'Vote added successfully'], 200);
+        return response()->json(['success' => 'Voted successfully'], 200);
     }
 
     /**
