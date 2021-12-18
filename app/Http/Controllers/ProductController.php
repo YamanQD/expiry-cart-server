@@ -289,7 +289,7 @@ class ProductController extends Controller
             // If user already voted with different vote
             $vote->type = $fields['type'];
             $vote->save();
-            $product->votes += $fields['type'] === 'up' ? 1 : -1;
+            $product->votes += $fields['type'] === 'up' ? 2 : -2;
             $product->save();
             return response()->json(['success' => 'Vote updated successfully'], 200);
         }
