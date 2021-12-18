@@ -269,7 +269,7 @@ class ProductController extends Controller
     public function vote(Request $request, $id)
     {
         $fields = $request->validate([
-            'vote' => 'required|string|in:up,down',
+            'type' => 'required|string|in:up,down',
         ]);
 
         $product = Product::find($id);
@@ -282,23 +282,23 @@ class ProductController extends Controller
         // If user already voted for this product
         if ($vote) {
             // If user already voted with the same vote
-            if ($vote->type === $fields['vote']) {
+            if ($vote->type === $fields['type']) {
                 return response()->json(['error' => 'You have already voted for this product'], 400);
             }
 
             // If user already voted with different vote
-            $vote->type = $fields['vote'];
+            $vote->type = $fields['type'];
             $vote->save();
-            $product->votes += $fields['vote'] === 'up' ? 1 : -1;
+            $product->votes += $fields['type'] === 'up' ? 1 : -1;
             $product->save();
             return response()->json(['success' => 'Vote updated successfully'], 200);
         }
         // If user hasn't voted for this product
         $user->votes()->create([
             'product_id' => $id,
-            'type' => $fields['vote'],
+            'type' => $fields['type'],
         ]);
-        $product->votes += $fields['vote'] === 'up' ? 1 : -1;
+        $product->votes += $fields['type'] === 'up' ? 1 : -1;
         $product->save();
 
         return response()->json(['success' => 'Voted successfully'], 200);
