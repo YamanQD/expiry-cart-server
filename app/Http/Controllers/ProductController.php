@@ -134,7 +134,7 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $product = Product::find($id);
         if (!$product) {
@@ -167,6 +167,14 @@ class ProductController extends Controller
             ];
         });
 
+        $user = $request->user();
+        $userVote = $product->votes()->where('user_id', $user->id)->first();
+        if ($userVote) {
+            $userVote = $userVote->type == 'up' ? 1 : -1;
+        } else {
+            $userVote = 0;
+        }
+
         return response()->json([
             'id' => $product->id,
             'name' => $product->name,
@@ -180,6 +188,7 @@ class ProductController extends Controller
             'votes' => $product->votes,
             'views' => $product->views,
             'owner' => $owner,
+            'user_vote' => $userVote,
             'comments' => $comments,
         ], 200);
     }
