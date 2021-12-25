@@ -81,4 +81,15 @@ class AuthController extends Controller
             'message' => 'Successfully logged out'
         ]);
     }
+
+    /**
+     * Authenticated User details
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function user(Request $request)
+    {
+        return response()->json($request->user());
+    }
 }
