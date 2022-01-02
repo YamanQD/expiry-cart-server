@@ -121,6 +121,10 @@ class ProductController extends Controller
             return response()->json(['error' => 'Category does not exist'], 400);
         }
 
+        if (!$request->hasFile('image')) {
+            $fields['image'] = 'default.png';
+        }
+
         $user = $request->user();
         $fields['user_id'] = $user->id;
 
@@ -248,7 +252,7 @@ class ProductController extends Controller
         }
 
         // Delete product image from server
-        if ($product->image) {
+        if ($product->image && $product->image !== 'default.png') {
             $imageFile = public_path('images/products/' . $product->image);
             if (file_exists($imageFile)) {
                 unlink($imageFile);
