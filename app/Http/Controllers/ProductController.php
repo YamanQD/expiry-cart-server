@@ -106,11 +106,6 @@ class ProductController extends Controller
             'category' => 'required|string',
         ]);
 
-        // Check if image size is less than 512KB
-        if ($request->hasFile('image') && $request->file('image')->getSize() > (0.5 * 1024 * 1024)) {
-            return response()->json(['error' => 'Image size must be less than 512KB'], 400);
-        }
-
         // Check if category exists
         foreach (Category::all() as $key => $value) {
             if ($value->name === $request->input('category')) {
