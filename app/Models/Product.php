@@ -52,6 +52,10 @@ class Product extends Model
     // Save the image on the server and return its name
     public function setImageAttribute($value)
     {
+        if (gettype($value) === 'string') {
+            $this->attributes['image'] = $value;
+            return;
+        }
         $path = public_path('images/products');
         $name = time() . '.' . $value->getClientOriginalExtension();
 
