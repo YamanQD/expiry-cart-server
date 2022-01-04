@@ -87,8 +87,10 @@ class ProductController extends Controller
         $searchTerm = $request->input('search');
         if ($searchTerm) {
             $products = $products->filter(function ($product) use ($searchTerm) {
-                return strpos(strtolower($product['name']), strtolower($searchTerm)) !== false;
+                return strpos(strtolower($product['name']), strtolower($searchTerm)) !== false ||
+                    strpos(strtolower($product['expiry_date']), strtolower($searchTerm)) !== false;
             });
+            $products = $products->values();
         }
 
         $sortBy = $request->input('sort');
