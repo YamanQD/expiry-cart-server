@@ -84,7 +84,14 @@ class ProductController extends Controller
             });
         }
 
-        $sortBy = $request->input('sortby');
+        $searchTerm = $request->input('search');
+        if ($searchTerm) {
+            $products = $products->filter(function ($product) use ($searchTerm) {
+                return strpos(strtolower($product['name']), strtolower($searchTerm)) !== false;
+            });
+        }
+
+        $sortBy = $request->input('sort');
         if ($sortBy == 'price' || $sortBy == 'expiry_date' || $sortBy == 'name') {
             $products = $products->sortBy($sortBy);
         }
