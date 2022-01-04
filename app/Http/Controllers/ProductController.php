@@ -144,20 +144,12 @@ class ProductController extends Controller
         $product->views += 1;
         $product->save();
 
-        // Add owner field with id and name
-        $owner = $product->user;
-        $owner = [
-            'id' => $owner->id,
-            'name' => $owner->name,
-        ];
+
+        $isOwner = $request->user()->id === $product->user->id;
 
         $comments = $product->comments->map(function ($comment) {
             // Add owner field with id and name
-            $owner = $comment->user;
-            $owner = [
-                'id' => $owner->id,
-                'name' => $owner->name,
-            ];
+            $owner = $comment->user->name;
 
             return [
                 'id' => $comment->id,
@@ -186,7 +178,7 @@ class ProductController extends Controller
             'contact_info' => $product->contact_info,
             'votes' => $product->votes,
             'views' => $product->views,
-            'owner' => $owner,
+            'is_owner' => $isOwner,
             'user_vote' => $userVote,
             'comments' => $comments,
         ], 200);
