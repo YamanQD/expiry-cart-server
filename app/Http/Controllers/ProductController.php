@@ -41,7 +41,7 @@ class ProductController extends Controller
                 return response()->json(['error' => 'Category not found'], 404);
             }
 
-            return $category->products->map(function ($product) {
+            $products = $category->products->map(function ($product) {
                 // Add owner field with id and name
                 $owner = $product->user;
                 $owner = [
@@ -61,28 +61,35 @@ class ProductController extends Controller
                     'owner' => $owner,
                 ];
             });
+        } else {
+            // Return all products
+            $products = Product::all()->map(function ($product) {
+                // Add owner field with id and name
+                $owner = $product->user;
+                $owner = [
+                    'id' => $owner->id,
+                    'name' => $owner->name,
+                ];
+
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'image' => $product->image,
+                    'category' => $product->category->name,
+                    'expiry_date' => $product->expiry_date,
+                    'votes' => $product->votes,
+                    'views' => $product->views,
+                ];
+            });
         }
 
-        // Return all products
-        return Product::all()->map(function ($product) {
-            // Add owner field with id and name
-            $owner = $product->user;
-            $owner = [
-                'id' => $owner->id,
-                'name' => $owner->name,
-            ];
+        $sortBy = $request->input('sortby');
+        if ($sortBy == 'price' || $sortBy == 'expiry_date' || $sortBy == 'name') {
+            $products = $products->sortBy($sortBy);
+        }
 
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'image' => $product->image,
-                'category' => $product->category->name,
-                'expiry_date' => $product->expiry_date,
-                'votes' => $product->votes,
-                'views' => $product->views,
-            ];
-        });
+        return response()->json($products);
     }
 
     /**
