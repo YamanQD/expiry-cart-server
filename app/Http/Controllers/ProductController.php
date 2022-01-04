@@ -94,6 +94,7 @@ class ProductController extends Controller
         $sortBy = $request->input('sort');
         if ($sortBy == 'price' || $sortBy == 'expiry_date' || $sortBy == 'name') {
             $products = $products->sortBy($sortBy);
+            $products = $products->values();
         }
 
         return response()->json($products);
