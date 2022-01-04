@@ -201,7 +201,7 @@ class ProductController extends Controller
 
         // Check if user is owner of product
         $user = $request->user();
-        if ($user->id !== $product->user_id) {
+        if ($user->id != $product->user_id) {
             return response()->json(['error' => 'You are not the owner of this product'], 403);
         }
 
